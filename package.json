@@ -1,5 +1,5 @@
 {
-  "name": "rapids-v1",
+  "name": "@jesusd.alvarado/rapids-v1",
   "version": "1.0.0",
   "description": "Functions to interact with the rapids-v1 architecture, the purpose of this repo is to simplify the interface to emit and listen events and reduce boilerplate.",
   "main": "index.js",
@@ -21,5 +21,6 @@
     "@1mill/lambda": "^0.3.3",
     "@1mill/sops": "^0.0.3",
     "ably": "^1.2.14"
-  }
+  },
+  "devDependencies": {}
 }
