@@ -1,0 +1,25 @@
+{
+  "name": "rapids-v1",
+  "version": "1.0.0",
+  "description": "Functions to interact with the rapids-v1 architecture, the purpose of this repo is to simplify the interface to emit and listen events and reduce boilerplate.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jesusdalvarado/rapids-v1.git"
+  },
+  "author": "Jesus Alvarado",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jesusdalvarado/rapids-v1/issues"
+  },
+  "homepage": "https://github.com/jesusdalvarado/rapids-v1#readme",
+  "dependencies": {
+    "@1mill/cloudevents": "^3.0.0",
+    "@1mill/lambda": "^0.3.3",
+    "@1mill/sops": "^0.0.3",
+    "ably": "^1.2.14"
+  }
+}
