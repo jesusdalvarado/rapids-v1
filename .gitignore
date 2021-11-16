@@ -1,0 +1,18 @@
+# General
+.env
+debug.log
+
+# Development
+dev.output.json
+lambda.output.json
+local.output.json
+
+# Node
+node_modules
+
+# Terraform
+.terraform
+terraform*.zip
+
+# Mac
+**/.DS_Store
