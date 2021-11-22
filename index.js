@@ -6,8 +6,6 @@ const { Sops } = require('@1mill/sops')
 const ABLY_DEVELOPMENT_CHANNEL_NAME = 'development:rapids-v1:2021-09-12'
 
 const emit = async ({ data, type }) => {
-  if (!data) { throw new Error('"data" is required') }
-  if (!type) { throw new Error('"type" is required') }
 
   console.log(`Emitting ${type} data: ${data}`)
   const lambda = new Lambda({})
