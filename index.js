@@ -17,13 +17,15 @@ const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (process.env.NODE_ENV ===
 const emit = async ({
   data,
   type,
-  source: typeof window !== 'undefined' ? window.location.href : `${process.env.NODE_ENV}-source`,
+  source,
   originid,
   originsource,
   origintype
 }) => {
 
   if (process.env.NODE_ENV === 'development') { console.log(`Emitting ${type} data: ${data}`) }
+
+  source = source || (typeof(window) !== 'undefined' ? window.location.href : `${process.env.NODE_ENV}-source`)
 
   const lambda = new Lambda({})
   await lambda.invoke({
