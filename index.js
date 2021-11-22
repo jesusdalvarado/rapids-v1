@@ -12,7 +12,7 @@ process.env.JESUS_MILL_SOPS_AWS_ACCESS_KEY_ID = process.env.MILL_SOPS_AWS_ACCESS
 process.env.JESUS_MILL_SOPS_AWS_REGION = process.env.MILL_SOPS_AWS_REGION
 process.env.JESUS_MILL_SOPS_AWS_SECRET_ACCESS_KEY = process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY
 
-const ABLY_DEVELOPMENT_CHANNEL_NAME = 'development:rapids-v1:2021-09-12'
+const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (process.env.NODE_ENV === 'development') ? 'development:rapids-v1:2021-09-12' : 'production:rapids-v1:2021-09-12'
 
 const emit = async ({ data, type }) => {
 
@@ -35,7 +35,7 @@ const listen = async ({ type, handler }) => {
 
   const sops = new Sops({})
 	const ably = new Ably.Realtime.Promise(await sops.decrypt('ABLY_API_KEY'))
-	const channel = await ably.channels.get(ABLY_DEVELOPMENT_CHANNEL_NAME)
+	const channel = await ably.channels.get(ABLY_CHANNEL)
 	await channel.subscribe(SUBSCRIBED_CLOUDEVENT_TYPES, async ({ data: { cloudevent }}) => {
     await handler({ cloudevent })
 	})
