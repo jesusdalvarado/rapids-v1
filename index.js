@@ -14,13 +14,17 @@ process.env.JESUS_MILL_SOPS_AWS_SECRET_ACCESS_KEY = process.env.MILL_SOPS_AWS_SE
 
 const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (process.env.NODE_ENV === 'development') ? 'development:rapids-v1:2021-09-12' : 'production:rapids-v1:2021-09-12'
 
-const emit = async ({ data, type }) => {
+const emit = async ({
+  data,
+  type,
+  source: typeof window !== 'undefined' ? window.location.href : `${process.env.NODE_ENV}-source`,
+}) => {
 
   if (process.env.NODE_ENV === 'development') { console.log(`Emitting ${type} data: ${data}`) }
 
   const lambda = new Lambda({})
   await lambda.invoke({
-    cloudevent: new Cloudevent({data, type}),
+    cloudevent: new Cloudevent({ data, type, source }),
     functionName: 'rapids-v1-hydrator-v0',
   })
 }
