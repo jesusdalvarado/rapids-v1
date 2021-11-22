@@ -7,7 +7,8 @@ const ABLY_DEVELOPMENT_CHANNEL_NAME = 'development:rapids-v1:2021-09-12'
 
 const emit = async ({ data, type }) => {
 
-  console.log(`Emitting ${type} data: ${data}`)
+  if (process.env.NODE_ENV === 'development') { console.log(`Emitting ${type} data: ${data}`) }
+
   const lambda = new Lambda({})
   await lambda.invoke({
     cloudevent: new Cloudevent({data, type}),
@@ -21,8 +22,7 @@ const listen = async ({ type, handler }) => {
   if (!type) { throw new Error('Function "handler" is required') }
   if (!handler) { throw new Error('String "type" is required, you can also use an array of strings') }
 
-	console.log('Starting ably subscriptions ...')
-  console.log(`Subscribing to ${type}`)
+  if (process.env.NODE_ENV === 'development') { console.log(`Starting ably subscriptions ... Subscribing to ${type}`) }
 
   const sops = new Sops({})
 	const ably = new Ably.Realtime.Promise(await sops.decrypt('ABLY_API_KEY'))
