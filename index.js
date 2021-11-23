@@ -25,7 +25,7 @@ const emit = async ({
 
   if (process.env.NODE_ENV === 'development') { console.log(`Emitting ${type} data: ${data}`) }
 
-  source = source || (typeof(window) !== 'undefined' ? window.location.href : `${process.env.NODE_ENV}-source`)
+  source = source || (typeof(window) !== 'undefined' ? window.location.href : `${process.env.JESUS_MILL_CLOUDEVENTS_SOURCE}-source`)
 
   const lambda = new Lambda({})
   await lambda.invoke({
