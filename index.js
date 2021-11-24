@@ -50,7 +50,29 @@ const listen = async ({ type, handler }) => {
 	})
 }
 
+const request = async ({ data, type }) => {
+	const getFuncNameEvent = new Cloudevent({
+		data: JSON.stringify({ type }),
+		type: 'cmd.get-function-name-for-type.v0',
+	})
+
+	const functionName = await lambda.invoke({
+		cloudevent: getFuncNameEvent,
+		functionName: 'rapids-v1-hydrator-v0',
+		invocationType: 'RequestResponse',
+	})
+
+	const event = new Cloudevent({ data, type })
+	const response = await lambda.invoke({
+		cloudevent: event,
+		functionName: functionName,
+		invocationType: 'RequestResponse',
+	})
+	return response
+}
+
 module.exports = {
   emit,
   listen,
+  request,
 }
