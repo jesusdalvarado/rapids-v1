@@ -56,6 +56,7 @@ const request = async ({ data, type }) => {
 		type: 'cmd.get-function-name-for-type.v0',
 	})
 
+  const lambda = new Lambda({})
 	const functionName = await lambda.invoke({
 		cloudevent: getFuncNameEvent,
 		functionName: 'rapids-v1-hydrator-v0',
