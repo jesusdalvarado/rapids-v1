@@ -14,6 +14,10 @@ process.env.JESUS_MILL_SOPS_AWS_SECRET_ACCESS_KEY = process.env.MILL_SOPS_AWS_SE
 
 const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (process.env.NODE_ENV === 'development') ? 'development:rapids-v1:2021-09-12' : 'production:rapids-v1:2021-09-12'
 
+const lambda = new Lambda({})
+const sops = new Sops({})
+const ably = new Ably.Realtime.Promise(await sops.decrypt('ABLY_API_KEY'))
+
 const emit = async ({
   data,
   type,
@@ -27,7 +31,6 @@ const emit = async ({
 
   source = source || (typeof(window) !== 'undefined' ? window.location.href : `${process.env.JESUS_MILL_CLOUDEVENTS_SOURCE}-source`)
 
-  const lambda = new Lambda({})
   await lambda.invoke({
     cloudevent: new Cloudevent({ data, type, source, originid, originsource, origintype }),
     functionName: 'rapids-v1-hydrator-v0',
@@ -42,33 +45,55 @@ const listen = async ({ type, handler }) => {
 
   if (process.env.NODE_ENV === 'development') { console.log(`Starting ably subscriptions ... Subscribing to ${type}`) }
 
-  const sops = new Sops({})
-	const ably = new Ably.Realtime.Promise(await sops.decrypt('ABLY_API_KEY'))
 	const channel = await ably.channels.get(ABLY_CHANNEL)
 	await channel.subscribe(SUBSCRIBED_CLOUDEVENT_TYPES, async ({ data: { cloudevent }}) => {
     await handler({ cloudevent })
 	})
 }
 
-const request = async ({ data, type }) => {
-	const getFuncNameEvent = new Cloudevent({
-		data: JSON.stringify({ type }),
-		type: 'cmd.get-function-name-for-type.v0',
-	})
+const getFuncName = async ({ type }) => {
+  const getFuncNameEvent = new Cloudevent({
+    data: JSON.stringify({ type }),
+    type: 'GET-FUNCTION-NAME',
+  })
+  functionName = await lambda.invoke({
+    cloudevent: getFuncNameEvent,
+    functionName: 'rapids-v1-hydrator-v0',
+    invocationType: 'RequestResponse',
+  })
 
-  const lambda = new Lambda({})
-	const functionName = await lambda.invoke({
-		cloudevent: getFuncNameEvent,
-		functionName: 'rapids-v1-hydrator-v0',
-		invocationType: 'RequestResponse',
-	})
+  return functionName
+}
 
-	const event = new Cloudevent({ data, type })
+const request = async ({
+  data,
+  type,
+  source,
+  originid,
+  originsource,
+  origintype
+}) => {
+  const inDev = process.env.NODE_ENV === "development"
+
+  if (inDev) { const functionName = await getFuncName({ type }) }
+
+	const cloudevent = new Cloudevent({
+    data,
+    type,
+    source,
+    originid,
+    originsource,
+    origintype
+  })
+
+  if (inDev) { console.log(`\n--- Requesting ${functionName} ---\n`, cloudevent) }
+
 	const response = await lambda.invoke({
-		cloudevent: event,
-		functionName: functionName,
+		cloudevent: cloudevent,
+    functionName: inDev ? functionName : type,
 		invocationType: 'RequestResponse',
 	})
+
 	return response
 }
 
