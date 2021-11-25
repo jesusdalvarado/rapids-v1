@@ -16,7 +16,6 @@ const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (process.env.NODE_ENV ===
 
 const lambda = new Lambda({})
 const sops = new Sops({})
-const ably = new Ably.Realtime.Promise(await sops.decrypt('ABLY_API_KEY'))
 
 const emit = async ({
   data,
@@ -45,6 +44,7 @@ const listen = async ({ type, handler }) => {
 
   if (process.env.NODE_ENV === 'development') { console.log(`Starting ably subscriptions ... Subscribing to ${type}`) }
 
+  const ably = new Ably.Realtime.Promise(await sops.decrypt('ABLY_API_KEY'))
 	const channel = await ably.channels.get(ABLY_CHANNEL)
 	await channel.subscribe(SUBSCRIBED_CLOUDEVENT_TYPES, async ({ data: { cloudevent }}) => {
     await handler({ cloudevent })
