@@ -51,10 +51,11 @@ const listen = async ({ type, handler }) => {
 	})
 }
 
-const getFuncName = async ({ type }) => {
+const getFuncName = async ({ type, source }) => {
   const getFuncNameEvent = new Cloudevent({
     data: JSON.stringify({ type }),
     type: 'GET-FUNCTION-NAME',
+    source
   })
   functionName = await lambda.invoke({
     cloudevent: getFuncNameEvent,
@@ -75,7 +76,9 @@ const request = async ({
 }) => {
   const inDev = process.env.NODE_ENV === "development"
 
-  if (inDev) { const functionName = await getFuncName({ type }) }
+  source = source || (typeof(window) !== 'undefined' ? window.location.href : `${process.env.JESUS_MILL_CLOUDEVENTS_SOURCE}-source`)
+
+  if (inDev) { const functionName = await getFuncName({ type, source }) }
 
 	const cloudevent = new Cloudevent({
     data,
