@@ -13,9 +13,9 @@ process.env.MILL_SOPS_AWS_REGION = process.env.MILL_SOPS_AWS_REGION || process.e
 process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY = process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY || process.env.JESUS_MILL_SOPS_AWS_SECRET_ACCESS_KEY || process.env.VUE_APP_AWS_SECRET_ACCESS_KEY
 
 const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (process.env.NODE_ENV === 'development') ? 'development:rapids-v1:2021-09-12' : 'production:rapids-v1:2021-09-12'
-const inVue = (process.env.VUE_APP_AWS_ACCESS_KEY_ID)
+const inVue = process.env.VUE_APP_AWS_ACCESS_KEY_ID
 const sops = new Sops({})
-const lambda
+let lambda
 
 if (inVue) {
   lambda = new Lambda({
