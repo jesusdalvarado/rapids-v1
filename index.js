@@ -13,9 +13,20 @@ process.env.MILL_SOPS_AWS_REGION = process.env.MILL_SOPS_AWS_REGION || process.e
 process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY = process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY || process.env.JESUS_MILL_SOPS_AWS_SECRET_ACCESS_KEY || process.env.VUE_APP_AWS_SECRET_ACCESS_KEY
 
 const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (process.env.NODE_ENV === 'development') ? 'development:rapids-v1:2021-09-12' : 'production:rapids-v1:2021-09-12'
-
-const lambda = new Lambda({})
+const inVue = (process.env.VUE_APP_AWS_ACCESS_KEY_ID)
 const sops = new Sops({})
+const lambda
+
+if (inVue) {
+  lambda = new Lambda({
+    accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID,
+    endpoint: process.env.VUE_APP_JESUS_MILL_LAMBDA_AWS_ENDPOINT || null,
+    region: process.env.VUE_APP_AWS_DEFAULT_REGION,
+    secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
+  })
+} else {
+  lambda = new Lambda({})
+}
 
 const emit = async ({
   data,
