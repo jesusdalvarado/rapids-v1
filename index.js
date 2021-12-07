@@ -3,14 +3,25 @@ const { Lambda } = require('@1mill/lambda')
 const Ably = require('ably')
 const { Sops } = require('@1mill/sops')
 
-process.env.MILL_CLOUDEVENTS_SOURCE = process.env.MILL_CLOUDEVENTS_SOURCE || process.env.JESUS_MILL_CLOUDEVENTS_SOURCE || process.env.VUE_APP_JESUS_MILL_CLOUDEVENTS_SOURCE
-process.env.MILL_LAMBDA_AWS_ENDPOINT = process.env.MILL_LAMBDA_AWS_ENDPOINT || process.env.JESUS_MILL_LAMBDA_AWS_ENDPOINT || process.env.VUE_APP_JESUS_MILL_LAMBDA_AWS_ENDPOINT
-process.env.MILL_LAMBDA_AWS_ACCESS_KEY_ID = process.env.MILL_LAMBDA_AWS_ACCESS_KEY_ID || process.env.JESUS_MILL_LAMBDA_AWS_ACCESS_KEY_ID || process.env.VUE_APP_AWS_ACCESS_KEY_ID
-process.env.MILL_LAMBDA_AWS_REGION = process.env.MILL_LAMBDA_AWS_REGION || process.env.JESUS_MILL_LAMBDA_AWS_REGION || process.env.VUE_APP_AWS_DEFAULT_REGION
-process.env.MILL_LAMBDA_AWS_SECRET_ACCESS_KEY = process.env.MILL_LAMBDA_AWS_SECRET_ACCESS_KEY || process.env.JESUS_MILL_LAMBDA_AWS_SECRET_ACCESS_KEY || process.env.VUE_APP_AWS_SECRET_ACCESS_KEY
-process.env.MILL_SOPS_AWS_ACCESS_KEY_ID = process.env.MILL_SOPS_AWS_ACCESS_KEY_ID || process.env.JESUS_MILL_SOPS_AWS_ACCESS_KEY_ID || process.env.VUE_APP_AWS_ACCESS_KEY_ID
-process.env.MILL_SOPS_AWS_REGION = process.env.MILL_SOPS_AWS_REGION || process.env.JESUS_MILL_SOPS_AWS_REGION || process.env.VUE_APP_AWS_DEFAULT_REGION
-process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY = process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY || process.env.JESUS_MILL_SOPS_AWS_SECRET_ACCESS_KEY || process.env.VUE_APP_AWS_SECRET_ACCESS_KEY
+process.env.JESUS_MILL_CLOUDEVENTS_SOURCE = process.env.JESUS_MILL_CLOUDEVENTS_SOURCE || process.env.MILL_CLOUDEVENTS_SOURCE || process.env.VUE_APP_JESUS_MILL_CLOUDEVENTS_SOURCE
+process.env.MILL_LAMBDA_AWS_ENDPOINT = process.env.JESUS_MILL_LAMBDA_AWS_ENDPOINT || process.env.MILL_LAMBDA_AWS_ENDPOINT || process.env.VUE_APP_JESUS_MILL_LAMBDA_AWS_ENDPOINT
+process.env.MILL_LAMBDA_AWS_ACCESS_KEY_ID = process.env.JESUS_MILL_LAMBDA_AWS_ACCESS_KEY_ID || process.env.MILL_LAMBDA_AWS_ACCESS_KEY_ID || process.env.VUE_APP_AWS_ACCESS_KEY_ID
+process.env.MILL_LAMBDA_AWS_REGION = process.env.JESUS_MILL_LAMBDA_AWS_REGION || process.env.MILL_LAMBDA_AWS_REGION || process.env.VUE_APP_AWS_DEFAULT_REGION
+process.env.MILL_LAMBDA_AWS_SECRET_ACCESS_KEY = process.env.JESUS_MILL_LAMBDA_AWS_SECRET_ACCESS_KEY || process.env.MILL_LAMBDA_AWS_SECRET_ACCESS_KEY || process.env.VUE_APP_AWS_SECRET_ACCESS_KEY
+process.env.MILL_SOPS_AWS_ACCESS_KEY_ID = process.env.JESUS_MILL_SOPS_AWS_ACCESS_KEY_ID || process.env.MILL_SOPS_AWS_ACCESS_KEY_ID || process.env.VUE_APP_AWS_ACCESS_KEY_ID
+process.env.MILL_SOPS_AWS_REGION = process.env.JESUS_MILL_SOPS_AWS_REGION || process.env.MILL_SOPS_AWS_REGION || process.env.VUE_APP_AWS_DEFAULT_REGION
+process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY = process.env.JESUS_MILL_SOPS_AWS_SECRET_ACCESS_KEY || process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY || process.env.VUE_APP_AWS_SECRET_ACCESS_KEY
+
+delete process.env.VUE_APP_AWS_ACCESS_KEY_ID
+delete process.env.VUE_APP_AWS_DEFAULT_REGION
+delete process.env.VUE_APP_AWS_SECRET_ACCESS_KEY
+
+const inDev = process.env.NODE_ENV === "development"
+
+if (inDev && process.env.MILL_LAMBDA_AWS_ENDPOINT==='undefined') { throw new Error('LAMBDA AWS ENDPOINT is required') }
+if (process.env.MILL_LAMBDA_AWS_ACCESS_KEY_ID==='undefined') { throw new Error('LAMBDA AWS ACCESS KEY ID is required') }
+if (process.env.MILL_LAMBDA_AWS_REGION==='undefined') { throw new Error('LAMBDA AWS REGION is required') }
+if (process.env.MILL_LAMBDA_AWS_SECRET_ACCESS_KEY==='undefined') { throw new Error('LAMBDA AWS SECRET ACCESS KEY is required') }
 
 const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (process.env.NODE_ENV === 'development') ? 'development:rapids-v1:2021-09-12' : 'production:rapids-v1:2021-09-12'
 const inVue = process.env.VUE_APP_AWS_ACCESS_KEY_ID
@@ -55,7 +66,16 @@ const listen = async ({ type, handler }) => {
 
   if (process.env.NODE_ENV === 'development') { console.log(`Starting ably subscriptions ... Subscribing to ${type}`) }
 
-  const ably = new Ably.Realtime.Promise(await sops.decrypt('ABLY_API_KEY'))
+  let ABLY_API_KEY
+  if (inVue) {
+    ABLY_API_KEY = process.env.VUE_APP_ABLY_API_KEY // can't access file system from client
+  } else {
+    ABLY_API_KEY = await sops.decrypt('ABLY_API_KEY')
+  }
+
+  if (ABLY_API_KEY===undefined) { throw new Error('ABLY_API_KEY is required') }
+
+  const ably = new Ably.Realtime.Promise(ABLY_API_KEY)
 	const channel = await ably.channels.get(ABLY_CHANNEL)
 	await channel.subscribe(SUBSCRIBED_CLOUDEVENT_TYPES, async ({ data: { cloudevent }}) => {
     await handler({ cloudevent })
@@ -85,8 +105,6 @@ const request = async ({
   originsource,
   origintype
 }) => {
-  const inDev = process.env.NODE_ENV === "development"
-
   source = source || (typeof(window) !== 'undefined' ? window.location.href : `${process.env.JESUS_MILL_CLOUDEVENTS_SOURCE}-source`)
 
   if (inDev) { const functionName = await getFuncName({ type, source }) }
