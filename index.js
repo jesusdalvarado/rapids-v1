@@ -48,6 +48,8 @@ const emit = async ({
   origintype
 }) => {
 
+  if (!type) { throw new Error('String "type" is required') }
+
   if (process.env.NODE_ENV === 'development') { console.log(`Emitting ${type} data: ${data}`) }
 
   source = source || (typeof(window) !== 'undefined' ? window.location.href : `${process.env.JESUS_MILL_CLOUDEVENTS_SOURCE}-source`)
