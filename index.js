@@ -63,12 +63,29 @@ const emit = async ({
 const listen = async ({ type, handler }) => {
   const SUBSCRIBED_CLOUDEVENT_TYPES = type
 
-  if (!type) { throw new Error('Function "handler" is required') }
-  if (!handler) { throw new Error('String "type" is required, you can also use an array of strings') }
+  if (!type) { throw new Error('String "type" is required, you can also use an array of strings') }
+  if (!handler) { throw new Error('Function "handler" is required') }
 
   if (process.env.NODE_ENV === 'development') { console.log(`Starting ably subscriptions ... Subscribing to ${type}`) }
 
+  const channel = await getAblyChannel()
+
+	await channel.subscribe(SUBSCRIBED_CLOUDEVENT_TYPES, async ({ data: { cloudevent }}) => {
+    await handler({ cloudevent })
+	})
+}
+
+const stopListen = async ({ types }) => {
+  if (!types) { throw new Error('String "types" is required, you can also use an array of strings') }
+
+  const channel = await getAblyChannel()
+
+  await channel.unsubscribe(types)
+}
+
+const getAblyChannel = async () => {
   let ABLY_API_KEY
+
   if (inVue) {
     ABLY_API_KEY = process.env.VUE_APP_ABLY_API_KEY // can't access file system from client
   } else {
@@ -79,9 +96,8 @@ const listen = async ({ type, handler }) => {
 
   const ably = new Ably.Realtime.Promise(ABLY_API_KEY)
 	const channel = await ably.channels.get(ABLY_CHANNEL)
-	await channel.subscribe(SUBSCRIBED_CLOUDEVENT_TYPES, async ({ data: { cloudevent }}) => {
-    await handler({ cloudevent })
-	})
+
+  return channel
 }
 
 const getFuncName = async ({ type, source }) => {
@@ -135,4 +151,5 @@ module.exports = {
   emit,
   listen,
   request,
+  stopListen,
 }
