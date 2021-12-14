@@ -12,19 +12,19 @@ process.env.MILL_SOPS_AWS_ACCESS_KEY_ID = process.env.JESUS_MILL_SOPS_AWS_ACCESS
 process.env.MILL_SOPS_AWS_REGION = process.env.JESUS_MILL_SOPS_AWS_REGION || process.env.MILL_SOPS_AWS_REGION || process.env.VUE_APP_AWS_DEFAULT_REGION
 process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY = process.env.JESUS_MILL_SOPS_AWS_SECRET_ACCESS_KEY || process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY || process.env.VUE_APP_AWS_SECRET_ACCESS_KEY
 
+const inVue = process.env.VUE_APP_AWS_ACCESS_KEY_ID
+const inDev = process.env.NODE_ENV === "development"
+
 delete process.env.VUE_APP_AWS_ACCESS_KEY_ID
 delete process.env.VUE_APP_AWS_DEFAULT_REGION
 delete process.env.VUE_APP_AWS_SECRET_ACCESS_KEY
-
-const inDev = process.env.NODE_ENV === "development"
 
 if (inDev && process.env.MILL_LAMBDA_AWS_ENDPOINT==='undefined') { throw new Error('LAMBDA AWS ENDPOINT is required') }
 if (process.env.MILL_LAMBDA_AWS_ACCESS_KEY_ID==='undefined') { throw new Error('LAMBDA AWS ACCESS KEY ID is required') }
 if (process.env.MILL_LAMBDA_AWS_REGION==='undefined') { throw new Error('LAMBDA AWS REGION is required') }
 if (process.env.MILL_LAMBDA_AWS_SECRET_ACCESS_KEY==='undefined') { throw new Error('LAMBDA AWS SECRET ACCESS KEY is required') }
 
-const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (process.env.NODE_ENV === 'development') ? 'development:rapids-v1:2021-09-12' : 'production:rapids-v1:2021-09-12'
-const inVue = process.env.VUE_APP_AWS_ACCESS_KEY_ID
+const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (inDev) ? 'development:rapids-v1:2021-09-12' : 'production:rapids-v1:2021-09-12'
 const sops = new Sops({})
 let lambda
 
@@ -50,9 +50,9 @@ const emit = async ({
 
   if (!type) { throw new Error('String "type" is required') }
 
-  if (process.env.NODE_ENV === 'development') { console.log(`Emitting ${type} data: ${data}`) }
+  if (inDev) { console.log(`Emitting ${type} data: ${data}`) }
 
-  source = source || (typeof(window) !== 'undefined' ? window.location.href : `${process.env.JESUS_MILL_CLOUDEVENTS_SOURCE}-source`)
+  source = source || (typeof(window) !== 'undefined' ? window.location.href : `${process.env.JESUS_MILL_CLOUDEVENTS_SOURCE}`)
 
   await lambda.invoke({
     cloudevent: new Cloudevent({ data, type, source, originid, originsource, origintype }),
@@ -66,7 +66,7 @@ const listen = async ({ type, handler }) => {
   if (!type) { throw new Error('String "type" is required, you can also use an array of strings') }
   if (!handler) { throw new Error('Function "handler" is required') }
 
-  if (process.env.NODE_ENV === 'development') { console.log(`Starting ably subscriptions ... Subscribing to ${type}`) }
+  if (inDev) { console.log(`Starting ably subscriptions ... Subscribing to ${type}`) }
 
   const channel = await getAblyChannel()
 
