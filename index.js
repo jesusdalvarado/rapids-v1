@@ -15,10 +15,6 @@ process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY = process.env.JESUS_MILL_SOPS_AWS_SE
 const inVue = process.env.VUE_APP_AWS_ACCESS_KEY_ID
 const inDev = process.env.NODE_ENV === "development"
 
-delete process.env.VUE_APP_AWS_ACCESS_KEY_ID
-delete process.env.VUE_APP_AWS_DEFAULT_REGION
-delete process.env.VUE_APP_AWS_SECRET_ACCESS_KEY
-
 if (inDev && process.env.MILL_LAMBDA_AWS_ENDPOINT==='undefined') { throw new Error('LAMBDA AWS ENDPOINT is required') }
 if (process.env.MILL_LAMBDA_AWS_ACCESS_KEY_ID==='undefined') { throw new Error('LAMBDA AWS ACCESS KEY ID is required') }
 if (process.env.MILL_LAMBDA_AWS_REGION==='undefined') { throw new Error('LAMBDA AWS REGION is required') }
