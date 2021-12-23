@@ -19,6 +19,9 @@ if (inDev && process.env.MILL_LAMBDA_AWS_ENDPOINT==='undefined') { throw new Err
 if (process.env.MILL_LAMBDA_AWS_ACCESS_KEY_ID==='undefined') { throw new Error('LAMBDA AWS ACCESS KEY ID is required') }
 if (process.env.MILL_LAMBDA_AWS_REGION==='undefined') { throw new Error('LAMBDA AWS REGION is required') }
 if (process.env.MILL_LAMBDA_AWS_SECRET_ACCESS_KEY==='undefined') { throw new Error('LAMBDA AWS SECRET ACCESS KEY is required') }
+if (process.env.MILL_SOPS_AWS_ACCESS_KEY_ID==='undefined') { throw new Error('SOPS AWS ACCESS KEY is required') }
+if (process.env.MILL_SOPS_AWS_REGION==='undefined') { throw new Error('SOPS AWS REGION is required') }
+if (process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY==='undefined') { throw new Error('SOPS AWS SECRET KEY is required') }
 
 const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (inDev) ? 'development:rapids-v1:2021-09-12' : 'production:rapids-v1:2021-09-12'
 const sops = new Sops({})

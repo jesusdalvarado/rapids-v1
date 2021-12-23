@@ -1,6 +1,6 @@
 {
   "name": "@jesusd.alvarado/rapids-v1",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Functions to interact with the rapids-v1 architecture, the purpose of this repo is to simplify the interface to emit and listen events and reduce boilerplate.",
   "main": "index.js",
   "scripts": {
