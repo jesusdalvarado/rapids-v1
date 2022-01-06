@@ -30,7 +30,7 @@ let lambda
 if (inVue) {
   lambda = new Lambda({
     accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID,
-    endpoint: process.env.VUE_APP_JESUS_MILL_LAMBDA_AWS_ENDPOINT || null,
+    endpoint: (process.env.VUE_APP_JESUS_MILL_LAMBDA_AWS_ENDPOINT === null || process.env.VUE_APP_JESUS_MILL_LAMBDA_AWS_ENDPOINT === 'undefined') ? null : process.env.VUE_APP_JESUS_MILL_LAMBDA_AWS_ENDPOINT,
     region: process.env.VUE_APP_AWS_DEFAULT_REGION,
     secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
   })
