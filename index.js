@@ -26,10 +26,10 @@ if (process.env.MILL_SOPS_AWS_SECRET_ACCESS_KEY==='undefined') { throw new Error
 const ABLY_CHANNEL = process.env.JESUS_ABLY_CHANNEL || (inDev) ? 'development:rapids-v1:2021-09-12' : 'production:rapids-v1:2021-09-12'
 const sops = new Sops({})
 let lambda = new Lambda({
-  accessKeyId: process.env.MILL_LAMBDA_AWS_ACCESS_KEY_ID,
-  endpoint: [null, undefined, 'undefined'].includes(process.env.MILL_LAMBDA_AWS_ENDPOINT) ? null : process.env.MILL_LAMBDA_AWS_ENDPOINT,
-  region: process.env.MILL_LAMBDA_AWS_REGION,
-  secretAccessKey: process.env.MILL_LAMBDA_AWS_SECRET_ACCESS_KEY,
+  accessKeyId: process.env.MILL_LAMBDA_AWS_ACCESS_KEY_ID || process.env.VUE_APP_AWS_ACCESS_KEY_ID,
+  endpoint: (process.env.NODE_ENV === 'production') ? null : (inVue) ? process.env.VUE_APP_JESUS_MILL_LAMBDA_AWS_ENDPOINT : process.env.MILL_LAMBDA_AWS_ENDPOINT,
+  region: process.env.MILL_LAMBDA_AWS_REGION || process.env.VUE_APP_AWS_DEFAULT_REGION,
+  secretAccessKey: process.env.MILL_LAMBDA_AWS_SECRET_ACCESS_KEY || process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
 })
 
 const emit = async ({
